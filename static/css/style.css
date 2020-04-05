@@ -1,0 +1,13 @@
+body 
+{
+    background-color: #F0F0F0;
+    font-size:large;
+}
+.container
+{
+    padding:10px;
+    margin-top: 10px;
+    float: center;
+    background-color: white;
+    height: fit-content;
+}
