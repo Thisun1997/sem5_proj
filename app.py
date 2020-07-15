@@ -24,7 +24,7 @@ import tensorflow as tf
 graph = tf.compat.v1.get_default_graph()
 
 app = Flask(__name__)
-tokenizer_rnn_file = open('model_14/tokenizer.pickle','rb')
+tokenizer_rnn_file = open('model_14/tokenizer_18.pickle','rb')
 tokenizer_rnn = p.load(tokenizer_rnn_file)
 tokenizer_rnn_file.close()
 tokenizer = RegexpTokenizer(r'\w+')
@@ -49,25 +49,43 @@ def preprocess(msg):
 def home():
     return render_template('home.html',len = 0, message = None, prediction = None)
 
-@app.route('/predict',methods=['POST'])
-def predict():
+@app.route('/predictTokens',methods=['POST'])
+def predictTokens():
     if request.method == 'POST':
         message1 = request.get_json()['message']
         message =request.get_json()['message']
         message = preprocess(message)
         global graph
         with graph.as_default():
-            rnn_file = 'model_14/RNN.pickle'
+            rnn_file = 'model_14/RNN_18cat_1_20.pickle'
             rnn = p.load(open(rnn_file,'rb'))
             result = rnn.predict(message)
-        category_names = ['medical_and_other_aids', 'army_and_police', 'needs', 'disasters', 'fire']
+        category_names = ['medical_and_other_aids',
+                         'army_and_police',
+                         'needs',
+                         'disasters',
+                         'infrastructure',
+                         'search_and_rescue',
+                         'child_alone',
+                         'shelter',
+                         'clothing',
+                         'money',
+                         'missing_people',
+                         'refugees',
+                         'death',
+                         'floods',
+                         'storm',
+                         'fire',
+                         'earthquake',
+                         'cold']
         l = []
-        for i in range (5):
-            if (round(result[0][i],1)> 0.4):
-                l.append(category_names[i])
+        res = sorted(range(len(result[0])), key = lambda sub: result[0][sub])[-5:]
+        for i in res:
+          if result[0][i] > 0.3:
+            l.append(category_names[i])
     return jsonify(
         message = message1,
-        prediction = l
+        tokens = l
     )
 
 if __name__ == '__main__':
